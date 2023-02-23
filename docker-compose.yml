@@ -1,0 +1,61 @@
+version: '3.9'
+services:
+
+  backend:
+    container_name: backend
+    image: backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_DATABASE: news
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    depends_on:
+      - db
+
+    networks:
+      - app  
+
+    ports:
+      - 5050:5050
+    volumes:
+      - ./backend:/app/backend
+
+  frontend:
+    container_name: frontend
+    image: frontend
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend:/app/frontend
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+    networks:
+      - app  
+    tty: true
+
+  db:
+    image: mysql:5.7.22
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: news
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: 'root'
+      SERVICE_NAME: mysql
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
